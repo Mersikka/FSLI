@@ -1,2 +1,2 @@
-# FSLI
-A self trained Finnish Sign Language Interpreter LSTM model.
+# FSLI (WIP)
+A really early work-in-progress rearl-time Finnish Sign Language Interpreter utilizing a self trained LSTM action recognition model.
