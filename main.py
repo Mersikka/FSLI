@@ -12,6 +12,23 @@ from mediapipe.tasks.python.vision import drawing_styles, drawing_utils
 HAND_MODEL_PATH = "./models/hand_landmarker.task"
 POSE_MODEL_PATH = "./models/pose_landmarker_lite.task"
 
+def extract_landmark_values(results):
+    landmark_values = {}
+    pose_landmarks_list = results["pose"].pose_landmarks
+    hand_landmarks_list = results["hand"].hand_landmarks
+    landmark_values["Pose"] = np.array([[lm.x, lm.y, lm.z, lm.visibility] for lm in pose_landmarks_list[0]]).flatten()
+
+    for i, landmarks in enumerate(hand_landmarks_list):
+        handedness_info = results["hand"].handedness[i][0]
+        hand_label = handedness_info.category_name
+
+        # hand_label can either be "Left" or "Right"
+        landmark_values[hand_label] = np.array([[lm.x, lm.y, lm.z, lm.visibility] for lm in landmarks]).flatten()
+
+    if "Left" not in landmark_values:
+        landmark_values["Left"] = np.zeros(21*4)
+    if "Right" not in landmark_values:
+        landmark_values["Right"] = np.zeros(21*4)
 
 def draw_landmarks_on_frame(image, detection_results):
     pose_landmarks_list = detection_results["pose"].pose_landmarks
@@ -99,8 +116,14 @@ def main():
             
             frame = cv2.flip(frame, 1)
             cv2.imshow("OpenCV Feed", frame)
+
+            if cv2.waitKey(5) & 0xFF == ord('t'):
+                landmark_values = extract_landmark_values(results)
+                print(landmark_values)
+            
             if cv2.waitKey(10) & 0xFF == ord('q'):
                 break
+
         cap.release()
         cv2.destroyAllWindows()
 
